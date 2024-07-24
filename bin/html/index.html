@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Web Clone</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="header">
+                <img src="profile.jpg" alt="Profile" class="profile-pic">
+                <div class="icons">
+                    <i class="fa fa-search"></i>
+                    <i class="fa fa-comment"></i>
+                    <i class="fa fa-ellipsis-v"></i>
+                </div>
+            </div>
+            <div class="search">
+                <input type="text" placeholder="Search or start new chat">
+            </div>
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('all')">All</button>
+                <button class="tab" onclick="switchTab('unread')">Unread</button>
+                <button class="tab" onclick="switchTab('groups')">Groups</button>
+            </div>
+            <div class="chat-list" id="all">
+                <div class="chat-item" onclick="openChat('saviors')">
+                    <img src="avatar1.jpg" alt="Avatar" class="avatar">
+                    <div class="chat-info">
+                        <h4 class="chat-name">Saviors</h4>
+                        <p class="chat-message">Navid All Gharaee: Look left</p>
+                    </div>
+                    <span class="chat-time">4:13 PM</span>
+                </div>
+                <div class="chat-item" onclick="openChat('sachin')">
+                    <img src="avatar1.jpg" alt="Avatar" class="avatar">
+                    <div class="chat-info">
+                        <h4 class="chat-name">sachin</h4>
+                        <p class="chat-message">sachin: bei, bei</p>
+                    </div>
+                    <span class="chat-time">4:13 PM</span>
+                </div>
+                <!-- Add more chat items similarly -->
+            </div>
+            <div class="chat-list" id="unread" style="display: none;">
+                <p>No unread chats</p>
+                <a href="#" onclick="switchTab('all')">View all chats</a>
+            </div>
+            <div class="chat-list" id="groups" style="display: none;">
+                <div class="chat-item" onclick="openChat('saviors')">
+                    <img src="avatar1.jpg" alt="Avatar" class="avatar">
+                    <div class="chat-info">
+                        <h4 class="chat-name">Saviors</h4>
+                        <p class="chat-message">Navid All Gharaee: Look left</p>
+                    </div>
+                    <span class="chat-time">4:13 PM</span>
+                </div>
+            </div>
+        </div>
+        <div class="main">
+            <div id="chat-saviors" class="chat-area" style="display: none;">
+                <div class="chat-header">Saviors</div>
+                <div class="chat-content">
+                    <div class="message">
+                        <span class="user">Navid All Gharaee:</span> Look left
+                    </div>
+                    <!-- Add more messages -->
+                </div>
+                <div class="chat-input">
+                    <input type="text" placeholder="Type a message">
+                    <button>Send</button>
+                </div>
+            </div>
+            <div id="chat-sachin" class="chat-area" style="display: none;">
+                <div class="chat-header">Saviors</div>
+                <div class="chat-content">
+                    <div class="message">
+                        <span class="user">sachin:</span> bei, bei
+                    </div>
+                    <!-- Add more messages -->
+                </div>
+                <div class="chat-input">
+                    <input type="text" placeholder="Type a message">
+                    <button>Send</button>
+                </div>
+            </div>
+            <!-- Add more chat areas similarly -->
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+/home/tao/projects/chatserver/build/CMakeFiles/chatserver.dir
+/home/tao/projects/chatserver/build/CMakeFiles/edit_cache.dir
+/home/tao/projects/chatserver/build/CMakeFiles/rebuild_cache.dir
+/home/tao/projects/chatserver/build/hight-performance-server/CMakeFiles/tao.dir
+/home/tao/projects/chatserver/build/hight-performance-server/CMakeFiles/bin_tao.dir
+/home/tao/projects/chatserver/build/hight-performance-server/CMakeFiles/edit_cache.dir
+/home/tao/projects/chatserver/build/hight-performance-server/CMakeFiles/rebuild_cache.dir
