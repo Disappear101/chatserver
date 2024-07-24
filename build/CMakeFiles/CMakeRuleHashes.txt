@@ -1,0 +1,4 @@
+# Hashes of file build rules.
+5437a263cf0ef8f7f6762bd47b3811e1 ../hight-performance-server/src/http/http11_parser.rl.cpp
+ecfed93997dd9b58550affde8048ec03 ../hight-performance-server/src/http/httpclient_parser.rl.cpp
+e5a218e64f04a4e66a642ed860e9eac1 ../hight-performance-server/src/http/uri.rl.cpp

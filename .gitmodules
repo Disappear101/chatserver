@@ -1,0 +1,3 @@
+[submodule "hight-performance-server"]
+	path = hight-performance-server
+	url = https://github.com/Disappear101/hight-performance-server.git
