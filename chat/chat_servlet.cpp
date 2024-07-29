@@ -84,9 +84,13 @@ ChatServlet::ChatServlet()
 
 }
 
+std::atomic<int> session_id{0};
+
 int32_t ChatServlet::onConnect(tao::http::HttpRequest::ptr header, tao::http::WSSession::ptr session)
 {
     TAO_LOG_INFO(g_logger) << "onConnect " << session;
+    ++session_id;
+    header->setHeader("$id", std::to_string(session_id));
     auto id = header->getHeader("$id");
     session_add(id, session);
     return 0;
@@ -256,7 +260,7 @@ int32_t ChatServlet::onLoginResponse(tao::http::HttpRequest::ptr header, tao::ht
     {
         //one user id refers to multiple session(different platform)
         auto sessions = get_sessions_by_userId(iter.userId);
-        rsp->set("type", "user_status_change");
+        rsp->set("result", "400");
         rsp->set("onlinestatus", "1");
         rsp->set("clientType", std::to_string(clientType));
         session_notify(rsp, sessions);
@@ -268,7 +272,28 @@ int32_t ChatServlet::onLoginResponse(tao::http::HttpRequest::ptr header, tao::ht
 
 int32_t ChatServlet::onRegisterResponse(tao::http::HttpRequest::ptr header, tao::http::WSSession::ptr session, ChatMessage::ptr data)
 {
+    User usr;
+    usr.userName = data->get("username");
+    usr.nickName = data->get("nickname");
+    usr.passWord = data->get("password");
 
-    return 0;
+    User cachedUser;
+    cachedUser.userId = 0;
+    UserMgr::GetInstance()->getUserInfoByUsername(usr.userName, cachedUser);
+
+    ChatMessage::ptr rsp = std::make_shared<ChatMessage>();
+    if (cachedUser.userId != 0) {
+        rsp->set("result", "400");
+        rsp->set("msg", "registered already");
+    } else {
+        if (!UserMgr::GetInstance()->addUser(usr)) {
+            rsp->set("result", "400");
+            rsp->set("msg", "register failed");
+        } else {
+            rsp->set("result", "400");
+            rsp->set("msg", "ok");
+        }
+    }
+    return SendMessage(session, rsp);
 }
 }

@@ -7,6 +7,8 @@
 #include "resource_servlet.h"
 #include "src/env.h"
 #include "chat_servlet.h"
+#include "src/db/mysql.h"
+#include "user.h"
 
 namespace chat {
 
@@ -28,6 +30,14 @@ bool MyModule::onUnload() {
 
 bool MyModule::onServerReady() {
     TAO_LOG_INFO(g_logger) << "onServerReady";
+
+    //init database
+    std::string abs_path = tao::EnvMgr::GetInstance()->getAbsolutePath("sql/chat.sql");
+    tao::MySQLMgr::GetInstance()->executeFromFile("chat1", abs_path);
+
+    //init user mananger
+    UserMgr::GetInstance()->init();
+
     return true;
 }
 

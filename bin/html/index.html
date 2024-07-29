@@ -7,7 +7,30 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
+    <div class="login-container" id="login-page">
+        <h2>Login</h2>
+        <div class="login-form">
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="login()">Login</button>
+            <button onclick="showRegisterPage()">Register</button>
+        </div>
+    </div>
+
+    <div class="register-container" id="register-page" style="display: none;">
+        <h2>Register</h2>
+        <div class="register-form">
+            <input type="text" id="reg-username" placeholder="Username">
+            <input type="text" id="reg-nickname" placeholder="Nickname">
+            <input type="password" id="reg-password" placeholder="Password">
+            <input type="email" id="reg-email" placeholder="Email Address">
+            <button onclick="showLoginPage()">Login</button>
+            <button onclick="registerUser()">Register</button>
+        </div>
+        <div id="register-msg"></div>
+    </div>
+
+    <div class="container" id="chat-page" style="display: none;">
         <div class="sidebar">
             <div class="header">
                 <img src="profile.jpg" alt="Profile" class="profile-pic">
@@ -34,14 +57,6 @@
                     </div>
                     <span class="chat-time">4:13 PM</span>
                 </div>
-                <div class="chat-item" onclick="openChat('sachin')">
-                    <img src="avatar1.jpg" alt="Avatar" class="avatar">
-                    <div class="chat-info">
-                        <h4 class="chat-name">sachin</h4>
-                        <p class="chat-message">sachin: bei, bei</p>
-                    </div>
-                    <span class="chat-time">4:13 PM</span>
-                </div>
                 <!-- Add more chat items similarly -->
             </div>
             <div class="chat-list" id="unread" style="display: none;">
@@ -49,14 +64,8 @@
                 <a href="#" onclick="switchTab('all')">View all chats</a>
             </div>
             <div class="chat-list" id="groups" style="display: none;">
-                <div class="chat-item" onclick="openChat('saviors')">
-                    <img src="avatar1.jpg" alt="Avatar" class="avatar">
-                    <div class="chat-info">
-                        <h4 class="chat-name">Saviors</h4>
-                        <p class="chat-message">Navid All Gharaee: Look left</p>
-                    </div>
-                    <span class="chat-time">4:13 PM</span>
-                </div>
+                <p>No groups available</p>
+                <a href="#" onclick="switchTab('all')">View all chats</a>
             </div>
         </div>
         <div class="main">
@@ -65,19 +74,6 @@
                 <div class="chat-content">
                     <div class="message">
                         <span class="user">Navid All Gharaee:</span> Look left
-                    </div>
-                    <!-- Add more messages -->
-                </div>
-                <div class="chat-input">
-                    <input type="text" placeholder="Type a message">
-                    <button>Send</button>
-                </div>
-            </div>
-            <div id="chat-sachin" class="chat-area" style="display: none;">
-                <div class="chat-header">Saviors</div>
-                <div class="chat-content">
-                    <div class="message">
-                        <span class="user">sachin:</span> bei, bei
                     </div>
                     <!-- Add more messages -->
                 </div>

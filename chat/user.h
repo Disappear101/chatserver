@@ -6,6 +6,7 @@
 #include <list>
 #include <set>
 #include <atomic>
+#include <mysql/mysql.h>
 #include "src/mutex.h"
 #include "src/singleton.h"
 
@@ -56,10 +57,13 @@ public:
     UserManager();
     ~UserManager();
 
-    bool init(const char* dbServer, const char* dbUserName, const char* dbPassword, const char* dbName);
+    bool init();
 
     UserManager(const UserManager& rhs) = delete;
     UserManager& operator=(const UserManager& rhs) = delete;
+
+    bool load_user_callback(MYSQL_ROW row, int field_count, int row_no);
+    //bool load_user_rela_callback(MYSQL_ROW row, int field_count, int row_no);
 
     bool addUser(User& u);
     bool makeFriendRelationshipInDB(int32_t smallUserid, int32_t greaterUserid);
