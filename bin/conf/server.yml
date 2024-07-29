@@ -6,3 +6,11 @@ servers:
       accept_worker: accept
       process_worker:  worker
       type: http
+    - address: ["0.0.0.0:8020"]
+      keepalive: 1
+      timeout: 1000
+      name: chatserver/1.1
+      accept_worker: accept
+      process_worker:  worker
+      type: ws
+
