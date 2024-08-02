@@ -44,7 +44,28 @@ private:
                             ,tao::http::WSSession::ptr session
                             ,ChatMessage::ptr data);
 
-    
+    int32_t onGetFriendListResponse(tao::http::HttpRequest::ptr header
+                            ,tao::http::WSSession::ptr session
+                            ,ChatMessage::ptr data);
+
+    int32_t onFindUserResponse(tao::http::HttpRequest::ptr header
+                            ,tao::http::WSSession::ptr session
+                            ,ChatMessage::ptr data);
+
+    int32_t onChangeUserStatusResponse(tao::http::HttpRequest::ptr header
+                            ,tao::http::WSSession::ptr session
+                            ,ChatMessage::ptr data);
+
+    int32_t onOperateFriendResponse(tao::http::HttpRequest::ptr header
+                            ,tao::http::WSSession::ptr session
+                            ,ChatMessage::ptr data);
+
+    int32_t OnChatResponse(tao::http::HttpRequest::ptr header
+                            ,tao::http::WSSession::ptr session
+                            ,ChatMessage::ptr data);
+
+    int32_t deleteFriend(tao::http::WSSession::ptr session
+                            ,int32_t friendid, int32_t userid);
 };
 
 
