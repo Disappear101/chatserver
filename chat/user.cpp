@@ -262,6 +262,14 @@ bool UserManager::loadRelationshipFromDb(int32_t userid, std::list<FriendInfo> &
 }
 bool UserManager::getTeamInfoByUserId(int32_t userid, std::string &teaminfo)
 {
+    std::set<int32_t> friendsId;
+    MutexType::Lock lock(m_mutex);
+    for (const auto& iter : m_allCachedUsers) {
+        if (iter.userId == userid) {
+            teaminfo = iter.teaminfo;
+            return true;
+        }
+    }
     return false;
 }
 bool UserManager::getFriendMarknameByUserId(int32_t userid1, int32_t friendid, std::string &markname)

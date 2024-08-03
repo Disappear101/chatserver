@@ -47,7 +47,8 @@ struct User
     std::string         mail;
     std::string         teaminfo;       //teaminfo for user；null for group
     int32_t             ownerid;        //for group，it is userid of group owner
-    std::list<FriendInfo>   friends;        
+    std::list<FriendInfo>   friends;     
+
 };
 
 class UserManager final
