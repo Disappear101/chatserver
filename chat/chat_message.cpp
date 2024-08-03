@@ -1,5 +1,4 @@
 #include "chat_message.h"
-#include "src/util.h"
 
 namespace chat {
 
@@ -44,5 +43,30 @@ std::string ChatMessage::toString() const
 void ChatMessage::clear()
 {
     m_datas.clear();
+}
+
+ChatMessage1::ptr ChatMessage1::Create(const std::string &v)
+{
+    Json::Value json;
+    if (!tao::JsonUtil::FromString(json, v)) {
+        return nullptr;
+    }
+    ChatMessage1::ptr rt = std::make_shared<ChatMessage1>();
+    rt->root = json;
+    return rt;
+}
+
+ChatMessage1::ChatMessage1()
+{
+
+}
+
+std::string ChatMessage1::toString() const
+{
+    return tao::JsonUtil::ToString(root);
+}
+void ChatMessage1::clear()
+{
+    root.clear();
 }
 }
