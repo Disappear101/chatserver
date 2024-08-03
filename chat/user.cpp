@@ -184,15 +184,47 @@ bool UserManager::modifyUserPassword(int32_t userid, const std::string &newpassw
 
 bool UserManager::getUserInfoByUsername(const std::string &username, User &u)
 {
+    MutexType::Lock lock(m_mutex);
+    for (const auto& iter : m_allCachedUsers) {
+        if (iter.userName == username) {
+            u = iter;
+            return true;
+        }
+    }
     return false;
 }
 
 bool UserManager::getUserInfoByUserId(int32_t userid, User &u)
 {
+    MutexType::Lock lock(m_mutex);
+    for (const auto& iter : m_allCachedUsers) {
+        if (iter.userName == u.userName) {
+            u = iter;
+            return true;
+        }
+    }
     return false;
 }
 bool UserManager::getFriendInfoByUserId(int32_t userid, std::list<User> &friends)
 {
+    std::list<FriendInfo> friendInfo;
+    MutexType::Lock lock(m_mutex);
+    for (const auto & iter : m_allCachedUsers) {
+        if (iter.userId == userid) {
+            friendInfo = iter.friends;
+        }
+    }
+
+    for (const auto & iter : friendInfo) {
+        User u;
+        for (const auto & iter2 : m_allCachedUsers) {
+            if (iter2.userId == iter.friendid) {
+                u = iter2;
+                friends.push_back(u);
+                break;
+            }
+        }
+    }
     return false;
 }
 

@@ -54,12 +54,12 @@ std::list<tao::http::WSSession::ptr> get_sessions_by_userId(int32_t userId) {
  }
 
 int32_t SendMessage(tao::http::WSSession::ptr session
-                    , ChatMessage::ptr msg) {
+                    , ChatMessage1::ptr msg) {
     TAO_LOG_INFO(g_logger) << msg->toString() << " - " << session;
     return session->sendMessage(msg->toString()) > 0 ? 0: 1;
 }
 
-void session_notify_all(ChatMessage::ptr msg, tao::http::WSSession::ptr session = nullptr) {
+void session_notify_all(ChatMessage1::ptr msg, tao::http::WSSession::ptr session = nullptr) {
     tao::RWMutex::ReadLock lock(m_mutex);
     auto sessions = m_sessions;
     lock.unlock();
@@ -72,7 +72,7 @@ void session_notify_all(ChatMessage::ptr msg, tao::http::WSSession::ptr session 
     }
 }
 
-void session_notify(ChatMessage::ptr msg, std::list<tao::http::WSSession::ptr>&to) {
+void session_notify(ChatMessage1::ptr msg, std::list<tao::http::WSSession::ptr>&to) {
     for(auto& i : to) {
         SendMessage(i, msg);
     }
@@ -102,7 +102,7 @@ int32_t ChatServlet::onClose(tao::http::HttpRequest::ptr header, tao::http::WSSe
     TAO_LOG_INFO(g_logger) << "onClose " << session << " id=" << id;
     if(!id.empty()) {
         session_del(id);
-        ChatMessage::ptr nty = std::make_shared<ChatMessage>();
+        ChatMessage1::ptr nty = std::make_shared<ChatMessage1>();
         nty->set("type", "user_leave");
         nty->set("time", tao::Time2Str(time(0)));
         nty->set("name", id);
@@ -117,7 +117,7 @@ int32_t ChatServlet::handle(tao::http::HttpRequest::ptr header, tao::http::WSFra
             << " opcode=" << msg->getOpcode()
             << " data=" << msg->getData();
 
-    auto data = ChatMessage::Create(msg->getData());
+    auto data = ChatMessage1::Create(msg->getData());
 
     auto id = header->getHeader("$id");
     //if wrong data format, erase session
@@ -128,7 +128,7 @@ int32_t ChatServlet::handle(tao::http::HttpRequest::ptr header, tao::http::WSFra
         }
     }
 
-    auto type = data->get("type");
+    auto type = data->get<std::string>("type");
 
     if (type =="login") {
         return onLoginResponse(header, session, data);
@@ -178,7 +178,7 @@ int32_t ChatServlet::handle(tao::http::HttpRequest::ptr header, tao::http::WSFra
 
     }
     else {
-        ChatMessage::ptr rsp = std::make_shared<ChatMessage>();
+        ChatMessage1::ptr rsp = std::make_shared<ChatMessage1>();
         rsp->set("result", "400");
         rsp->set("msg", "type is not found");
         return SendMessage(session, rsp);
@@ -186,7 +186,7 @@ int32_t ChatServlet::handle(tao::http::HttpRequest::ptr header, tao::http::WSFra
     return 0;
 }
 
-int32_t ChatServlet::onLoginResponse(tao::http::HttpRequest::ptr header, tao::http::WSSession::ptr session, ChatMessage::ptr data)
+int32_t ChatServlet::onLoginResponse(tao::http::HttpRequest::ptr header, tao::http::WSSession::ptr session, ChatMessage1::ptr data)
 {
     //{"username": "13917043329", "password": "123", "clienttype": 1, "status": 1}
     std::string id = header->getHeader("$id");
@@ -195,11 +195,11 @@ int32_t ChatServlet::onLoginResponse(tao::http::HttpRequest::ptr header, tao::ht
     auto userOline = m_sessions[id].second;
     m_mutex.unlock();
 
-    std::string username = data->get("username");
-    std::string password = data->get("password");
-    int clientType = std::atoi(data->get("clienttype").c_str());
+    std::string username = data->get<std::string>("username");
+    std::string password = data->get<std::string>("password");
+    int clientType = data->get<int>("clienttype");
 
-    ChatMessage::ptr rsp = std::make_shared<ChatMessage>();
+    ChatMessage1::ptr rsp = std::make_shared<ChatMessage1>();
 
     User cachedUser;
     cachedUser.userId = 0;
@@ -227,17 +227,17 @@ int32_t ChatServlet::onLoginResponse(tao::http::HttpRequest::ptr header, tao::ht
             userOline->nickname = cachedUser.nickName;
             userOline->password = cachedUser.passWord;
             userOline->clienttype = clientType;
-            userOline->status = std::atoi(data->get("status").c_str());
+            userOline->status = data->get<int>("status");
 
             rsp->set("result", "400");
             rsp->set("msg", "ok");
-            rsp->set("userid", std::to_string(userOline->userid));
+            rsp->set("userid", userOline->userid);
             rsp->set("username", userOline->username);
             rsp->set("nickname", userOline->nickname);
-            rsp->set("facetype", std::to_string(cachedUser.faceType));
+            rsp->set("facetype", cachedUser.faceType);
             rsp->set("customAvatar", cachedUser.customAvatar);
-            rsp->set("gender", std::to_string(cachedUser.gender));
-            rsp->set("birthday", std::to_string(cachedUser.birthday));
+            rsp->set("gender", cachedUser.gender);
+            rsp->set("birthday", cachedUser.birthday);
             rsp->set("signature", cachedUser.signature);
             rsp->set("address", cachedUser.address);
             rsp->set("phonenumber", cachedUser.phoneNumber);
@@ -272,18 +272,18 @@ int32_t ChatServlet::onLoginResponse(tao::http::HttpRequest::ptr header, tao::ht
     return 0;
 }
 
-int32_t ChatServlet::onRegisterResponse(tao::http::HttpRequest::ptr header, tao::http::WSSession::ptr session, ChatMessage::ptr data)
+int32_t ChatServlet::onRegisterResponse(tao::http::HttpRequest::ptr header, tao::http::WSSession::ptr session, ChatMessage1::ptr data)
 {
     User usr;
-    usr.userName = data->get("username");
-    usr.nickName = data->get("nickname");
-    usr.passWord = data->get("password");
+    usr.userName = data->get<std::string>("username");
+    usr.nickName = data->get<std::string>("nickname");
+    usr.passWord = data->get<std::string>("password");
 
     User cachedUser;
     cachedUser.userId = 0;
     UserMgr::GetInstance()->getUserInfoByUsername(usr.userName, cachedUser);
 
-    ChatMessage::ptr rsp = std::make_shared<ChatMessage>();
+    ChatMessage1::ptr rsp = std::make_shared<ChatMessage1>();
     rsp->set("msg_type", "register");
     if (cachedUser.userId != 0) {
         rsp->set("result", "400");
@@ -299,9 +299,9 @@ int32_t ChatServlet::onRegisterResponse(tao::http::HttpRequest::ptr header, tao:
     }
     return SendMessage(session, rsp);
 }
-int32_t ChatServlet::onGetFriendListResponse(tao::http::HttpRequest::ptr header, tao::http::WSSession::ptr session, ChatMessage::ptr data)
+int32_t ChatServlet::onGetFriendListResponse(tao::http::HttpRequest::ptr header, tao::http::WSSession::ptr session, ChatMessage1::ptr data)
 {
-    ChatMessage::ptr rsp = std::make_shared<ChatMessage>();
+    ChatMessage1::ptr rsp = std::make_shared<ChatMessage1>();
     rsp->set("msg_type", "getfriendlist");
 
     std::string id = header->getHeader("$id");
@@ -313,9 +313,7 @@ int32_t ChatServlet::onGetFriendListResponse(tao::http::HttpRequest::ptr header,
     UserMgr::GetInstance()->getUserInfoByUserId(userOline->userid, cur);
 
     if (cur.friends.empty()) {
-        rsp->set("nfriends", "0");
-        rsp->set("friends", "[]");
-        return SendMessage(session, rsp);
+        return SendMessage(session, ChatMessage1::Create("{\"msg_type\": \"getfriendlist\", \"nfriends\": 0, \"friends\": []}"));
     }
 
     std::stringstream friendsinfo;
@@ -323,7 +321,7 @@ int32_t ChatServlet::onGetFriendListResponse(tao::http::HttpRequest::ptr header,
     for (auto& friendinfo : cur.friends) {
         User u;
         UserMgr::GetInstance()->getUserInfoByUserId(friendinfo.friendid, u);
-        ChatMessage::ptr tmp = std::make_shared<ChatMessage>();
+        ChatMessage1::ptr tmp = std::make_shared<ChatMessage1>();
         tmp->set("userid", std::to_string(userOline->userid));
         tmp->set("username", userOline->username);
         tmp->set("nickname", userOline->nickname);
@@ -344,21 +342,21 @@ int32_t ChatServlet::onGetFriendListResponse(tao::http::HttpRequest::ptr header,
     return SendMessage(session, rsp);
 }
 
-int32_t ChatServlet::onFindUserResponse(tao::http::HttpRequest::ptr header, tao::http::WSSession::ptr session, ChatMessage::ptr data)
+int32_t ChatServlet::onFindUserResponse(tao::http::HttpRequest::ptr header, tao::http::WSSession::ptr session, ChatMessage1::ptr data)
 {
     //{ "type": 1, "username" : "zhang" }
-    ChatMessage::ptr rsp = std::make_shared<ChatMessage>();
+    ChatMessage1::ptr rsp = std::make_shared<ChatMessage1>();
 
     rsp->set("msg_type", "finduser");
 
-    std::string username = data->get("username");
+    std::string username = data->get<std::string>("username");
     User u;
     if (!UserMgr::GetInstance()->getUserInfoByUsername(username, u)) {
         rsp->set("msg", "ok");
         rsp->set("userinfo", "[]");
     } else {
         rsp->set("msg", "ok");
-        ChatMessage::ptr tmp = std::make_shared<ChatMessage>();
+        ChatMessage1::ptr tmp = std::make_shared<ChatMessage1>();
         tmp->set("userid", std::to_string(u.userId));
         tmp->set("username", u.userName);
         tmp->set("nickname", u.nickName);
@@ -375,26 +373,26 @@ int32_t ChatServlet::onFindUserResponse(tao::http::HttpRequest::ptr header, tao:
     return SendMessage(session, rsp);
 }
 
-int32_t ChatServlet::onChangeUserStatusResponse(tao::http::HttpRequest::ptr header, tao::http::WSSession::ptr session, ChatMessage::ptr data)
+int32_t ChatServlet::onChangeUserStatusResponse(tao::http::HttpRequest::ptr header, tao::http::WSSession::ptr session, ChatMessage1::ptr data)
 {
     //{"type": 1, "onlinestatus" : 1}
-    std::string status = data->get("onlinestatus");
+    int status = data->get<int>("onlinestatus");
     std::string id = header->getHeader("$id");
     tao::RWMutex::ReadLock lock(m_mutex);
     auto userOline = m_sessions[id].second;
     m_mutex.unlock();
 
-    if (userOline->status == stoi(status)) {
+    if (userOline->status == status) {
         return 0;
     }
-    userOline->status = stoi(status);
+    userOline->status = status;
 
     std::list<User>friends;
     UserMgr::GetInstance()->getFriendInfoByUserId(userOline->userid, friends);
     for (const auto& iter : friends) {
         //multiple terminal for the same id
         std::list<tao::http::WSSession::ptr> sessions = get_sessions_by_userId(iter.userId);
-        ChatMessage::ptr rsp = std::make_shared<ChatMessage>();
+        ChatMessage1::ptr rsp = std::make_shared<ChatMessage1>();
         rsp->set("msg_type", "userstatuschange");
         rsp->set("result", "400");
         rsp->set("onlinestatus", status);
@@ -405,7 +403,7 @@ int32_t ChatServlet::onChangeUserStatusResponse(tao::http::HttpRequest::ptr head
     return 0;
 }
 
-int32_t ChatServlet::onOperateFriendResponse(tao::http::HttpRequest::ptr header, tao::http::WSSession::ptr session, ChatMessage::ptr data)
+int32_t ChatServlet::onOperateFriendResponse(tao::http::HttpRequest::ptr header, tao::http::WSSession::ptr session, ChatMessage1::ptr data)
 {
     //"operation": 1-add friend request, 2-receive add reqeust, 3-response add friend, 4-exit group/del friend, 5-response del friend
     std::string id = header->getHeader("$id");
@@ -413,21 +411,21 @@ int32_t ChatServlet::onOperateFriendResponse(tao::http::HttpRequest::ptr header,
     auto userOline = m_sessions[id].second;
     m_mutex.unlock();
 
-    std::string operation = data->get("operation");
-    int32_t targetUserid = stoi(data->get("userid"));
+    int operation = data->get<int>("operation");
+    int32_t targetUserid = data->get<int>("userid");
     if (targetUserid > GROUPID_BOUBDARY) {
         //exit group
-        if (operation == "4") {
+        if (operation == 4) {
             deleteFriend(session, targetUserid, userOline->userid);
             return 0;
         }
     }
 
-    ChatMessage::ptr rsp = std::make_shared<ChatMessage>();
-    if (operation == "4") {
+    ChatMessage1::ptr rsp = std::make_shared<ChatMessage1>();
+    if (operation == 4) {
         deleteFriend(session, targetUserid, userOline->userid);
         return 0;
-    } else if (operation == "1") {
+    } else if (operation == 1) {
         if (UserMgr::GetInstance()->isFriend(userOline->userid, targetUserid)) {
             TAO_LOG_INFO(g_logger) << "Friendship already, unbale to add friend, friend id: " << targetUserid
                                     << " userid: " << targetUserid
@@ -436,9 +434,9 @@ int32_t ChatServlet::onOperateFriendResponse(tao::http::HttpRequest::ptr header,
         rsp->set("userid", std::to_string(userOline->userid));
         rsp->set("type", "2");
         rsp->set("username", userOline->username);
-    } else if (operation == "3") {
-        std::string accept = data->get("accept");
-        if (accept == "1") {
+    } else if (operation == 3) {
+        int accept = data->get<int>("accept");
+        if (accept == 1) {
             if (!UserMgr::GetInstance()->makeFriendRelationshipInDB(targetUserid, userOline->userid)) {
                 TAO_LOG_ERROR(g_logger) << "makeFriendRelationshipInDB error: " << rsp->toString()
                                         << " userid: " << userOline->userid;
@@ -450,8 +448,8 @@ int32_t ChatServlet::onOperateFriendResponse(tao::http::HttpRequest::ptr header,
                 return 0;
             }
         }
-        rsp->set("userid", std::to_string(userOline->userid));
-        rsp->set("type", "3");
+        rsp->set("userid", userOline->userid);
+        rsp->set("type", 3);
         rsp->set("username", userOline->username);
         rsp->set("accept", accept);
 
@@ -463,7 +461,7 @@ int32_t ChatServlet::onOperateFriendResponse(tao::http::HttpRequest::ptr header,
             return 0;
         }
         //send notify of successful adding friend to src user
-        ChatMessage::ptr msg = std::make_shared<ChatMessage>();
+        ChatMessage1::ptr msg = std::make_shared<ChatMessage1>();
         msg->set("msg_type", "operatefriend");
         msg->set("userid", std::to_string(targetUser.userId));
         msg->set("type", "3");
@@ -512,7 +510,7 @@ int32_t ChatServlet::deleteFriend(tao::http::WSSession::ptr session
                                 <<", client: " << session->getSocket()->getLocalAddress();
     }
 
-    ChatMessage::ptr rsp = std::make_shared<ChatMessage>();
+    ChatMessage1::ptr rsp = std::make_shared<ChatMessage1>();
     rsp->set("msg_type", "operatefriend");
     rsp->set("userid", std::to_string(userid));
     rsp->set("type", "5");
@@ -535,7 +533,7 @@ int32_t ChatServlet::deleteFriend(tao::http::WSSession::ptr session
     return 0;
 }
 
-int32_t ChatServlet::OnChatResponse(tao::http::HttpRequest::ptr header, tao::http::WSSession::ptr session, ChatMessage::ptr data)
+int32_t ChatServlet::OnChatResponse(tao::http::HttpRequest::ptr header, tao::http::WSSession::ptr session, ChatMessage1::ptr data)
 {
     /*
     {
@@ -564,13 +562,13 @@ int32_t ChatServlet::OnChatResponse(tao::http::HttpRequest::ptr header, tao::htt
     auto userOline = m_sessions[id].second;
     m_mutex.unlock();
 
-    int32_t targetid = stoi(data->get("targetid"));
-    std::string chatdata = data->get("chatdata");
+    int32_t targetid = data->get<int>("targetid");
+    std::string chatdata = data->get<std::string>("chatdata");
 
-    ChatMessage::ptr rsp = std::make_shared<ChatMessage>();
+    ChatMessage1::ptr rsp = std::make_shared<ChatMessage1>();
     rsp->set("msg_type", "chat");
-    rsp->set("sender", std::to_string(userOline->userid));
-    rsp->set("receiver", std::to_string(targetid));
+    rsp->set("sender", userOline->userid);
+    rsp->set("receiver", targetid);
     rsp->set("chatdata", chatdata);
 
     if (!UserMgr::GetInstance()->saveChatMsgToDb(userOline->userid, targetid, chatdata)) {
